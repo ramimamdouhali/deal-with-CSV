@@ -1,0 +1,64 @@
+{% extends "TasksManager/header.html" %}
+{% block title_html %}
+    Selected Columns
+{% endblock %}
+
+{% block h1 %}
+     <a> Search</a>
+     <br>
+    
+    {% if all_uploaded_files|length > 0 %}
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <td>ID</td>
+                    <td>Title</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for files in all_uploaded_files %}
+                    <tr>
+                        <td>{{ files.id }}</td>
+                        <td><a href="file-details-{{ files.id }}">{{ files.title }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+            <span>No Files.</span>
+    {% endif %}
+{% endblock %}
+
+{% block article_content %}
+    {{ file.id }}
+    {{ file.files }}
+    {{ file.title }}
+    {{ file.description }}
+    <br><br><br>
+
+    <table class="table table-striped">
+        <thead>
+            {% for cel in selected_headers %}
+
+                {% for org in original_headers %}
+
+                    {% if org.0 == cel %}
+                         <th> {{ org.1 }}</th>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </thead>
+
+        <tbody>
+            {% for row in new_csv_file %}
+                <tr>
+                    {% for cell in row %}
+                        <td> {{cell}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

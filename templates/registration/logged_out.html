@@ -1,0 +1,18 @@
+{% extends "TasksManager/header.html" %}
+
+
+{% block title_html %}
+    Login
+{% endblock %}
+
+
+{% block h1 %}
+    Login
+{% endblock %}
+
+
+{% block article_content %}
+
+    <p>Logged out!</p>
+    <a href="{%url 'login'%}">Click here to login again.</a>
+{% endblock %}

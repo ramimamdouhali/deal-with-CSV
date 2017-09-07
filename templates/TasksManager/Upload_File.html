@@ -1,0 +1,20 @@
+{% extends "TasksManager/header.html" %}
+
+{% block title_html %}
+    Upload File
+{% endblock %}
+
+{% block h1 %}
+    Upload Your New File
+{% endblock %}
+
+{% block article_content %}
+    <form method="post" enctype="multipart/form-data" >
+        {% csrf_token %}  <!-- This line inserts a CSRF token. -->
+        <table>
+            {{ form.as_table }}  <!-- This line displays lines of the form.-->
+        </table>
+
+        <p><input type="submit" value="Upload" /></p>
+    </form>
+{% endblock %}

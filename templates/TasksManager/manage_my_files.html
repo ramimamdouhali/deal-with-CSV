@@ -1,0 +1,53 @@
+{% extends "TasksManager/header.html" %}
+{% block title_html %}
+    Selected Columns
+{% endblock %}
+
+{% block h1 %}
+    <a href="{%  url "Upload_New_File" %}"> Upload Your New File</a><br>
+    You have {{all_uploaded_files|length}} File <br>
+        
+{% endblock %}
+
+{% block article_content %}
+    {{action}}
+    
+    <table class="table table-striped">
+        <thead>
+                <tr>
+                    <td>Select</td>
+                    <td>ID</td>
+                    <td>Title</td>
+                    <td>Description</td>
+                    <td>orginal_headers</td>
+                    <td>selected_headers</td>
+                    <td>modified_file</td> 
+                                    
+                </tr>      
+        </thead>
+
+        <tbody> 
+            <form method="post" enctype="multipart/form-data" action="">
+                <p><input type="submit" value="delet" /></p>
+                {% csrf_token %} 
+                {% for files in all_uploaded_files %}
+                    <tr>
+                        <td>
+                            <input type="checkbox"
+                            name="deletrow"
+                            id="deletedrows"
+                            value={{ files.id }}>
+                        </td>
+                        <td> {{ files.id }}</td>
+                        <td> <a href="/modify_my_file/file-details-{{ files.id }}">{{ files.title }}</a></td>
+                        <td> {{files.description }} </td>
+                        <td> {{files.orginal_headers}} </td>
+                        <td> {{files.selected_headers}} </td>
+                        <td> <a href="/modify_my_file/modified-file-{{ files.id }}">{{files.modified_file}}</a></td>
+                    </tr>
+                {% endfor %}
+                
+            </form>      
+        </tbody>
+    </table>
+{% endblock %}
