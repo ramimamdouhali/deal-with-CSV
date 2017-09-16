@@ -38,7 +38,7 @@ def page(request):
             
             new_supervisor.save()
             #return HttpResponse("sgfs")
-            return HttpResponseRedirect(reverse('public_index'))
+            return HttpResponseRedirect(reverse('Home_page'))
         else:
             return render(request, 'TasksManager/create_supervisor.html', {'form' : form})
     else:

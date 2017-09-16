@@ -125,6 +125,6 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, '/static/'),)
 DEFAULT_CHARSET = 'utf-8'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = 'media/'
-LOGIN_REDIRECT_URL='/home/'
+LOGIN_REDIRECT_URL='/manage_my_files/'
 EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 

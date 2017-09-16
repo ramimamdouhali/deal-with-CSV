@@ -1,53 +1,138 @@
 {% extends "TasksManager/header.html" %}
 {% block title_html %}
-    Selected Columns
+    Manage my files
 {% endblock %}
 
 {% block h1 %}
-    <a href="{%  url "Upload_New_File" %}"> Upload Your New File</a><br>
-    You have {{all_uploaded_files|length}} File <br>
-        
+    <a href="{%  url "Upload_New_File" %}"> Upload Your New File</a>
+    <h4><small> You have {{my_uploaded_files|length}} File.</small></h4>
+    <h3>My Files</h3>
+    <input type="text"
+    id="myInput"
+    onkeyup="myFunction()"
+    placeholder="Search Titles..."
+    title="Type in a name">
+
+   
 {% endblock %}
 
 {% block article_content %}
-    {{action}}
-    
-    <table class="table table-striped">
-        <thead>
-                <tr>
-                    <td>Select</td>
-                    <td>ID</td>
-                    <td>Title</td>
-                    <td>Description</td>
-                    <td>orginal_headers</td>
-                    <td>selected_headers</td>
-                    <td>modified_file</td> 
+    <h3>Deleting!!!</h3>
+    <p>{{action}} Select the files you want to delet by checking-in the check box at the left of the table. 
+        Please select one file at least.</p>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      #myInput {
+        background-image:
+        url('/static/TasksManager/icon/searchicon11-1.png');
+        
+        background-position: 10px 10px;
+        background-repeat: no-repeat;
+        width: 100%;
+        
+        padding: 12px 20px 12px 50px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+      }
+
+      #myTable {
+        border-collapse: collapse;
+        width: 100%;
+        border: 1px solid #ddd;
+       
+      }
+
+      #myTable th, #myTable td {
+        text-align: left;
+        padding: 12px;
+       
+      }
+     
+
+      #myTable tr {
+        border-bottom: 1px solid #ddd;
+      }
+
+      #myTable tr.header, #myTable tr:hover {
+        background-color: #f1f1f1;
+      }
+      
+      
+      
+    </style>
+
+      
+    <script>
+            function myFunction() {
+                var input, filter, table, tr, td, i;
+                input = document.getElementById("myInput");
+                filter = input.value.toUpperCase();
+                table = document.getElementById("myTable");
+                tr = table.getElementsByTagName("tr");
+
+                for (i = 0; i < tr.length; i++) {
+                    td = tr[i].getElementsByTagName("td")[2];
+                    if (td) {
+                        if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                        }
+                        else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+    </script>  
+
+
+    <div class="table-responsive">
+        <table id="myTable" class="table table-hover">
+            <thead>
+                <tr class="active ">
+                    <th>Select</th>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Orginal headers</th>
+                    <th>Selected headers</th>
+                    <th>Modified file</th> 
                                     
                 </tr>      
-        </thead>
+            </thead>
 
-        <tbody> 
+            <tbody> 
             <form method="post" enctype="multipart/form-data" action="">
-                <p><input type="submit" value="delet" /></p>
-                {% csrf_token %} 
-                {% for files in all_uploaded_files %}
-                    <tr>
-                        <td>
-                            <input type="checkbox"
-                            name="deletrow"
-                            id="deletedrows"
-                            value={{ files.id }}>
-                        </td>
-                        <td> {{ files.id }}</td>
-                        <td> <a href="/modify_my_file/file-details-{{ files.id }}">{{ files.title }}</a></td>
-                        <td> {{files.description }} </td>
-                        <td> {{files.orginal_headers}} </td>
-                        <td> {{files.selected_headers}} </td>
-                        <td> <a href="/modify_my_file/modified-file-{{ files.id }}">{{files.modified_file}}</a></td>
-                    </tr>
-                {% endfor %}
+                <div>
                 
+                    {% csrf_token %} 
+                    {% for files in my_uploaded_files %}
+                        <tr>
+                            <td>
+                                <input type="checkbox"
+                                name="deletrow"
+                                id="deletedrows"
+                                value={{ files.id }}>
+                            </td>
+                            <td> {{ files.id }}</td>
+                            <td> <a href="/modify_my_file/file-details-{{ files.id }}">{{ files.title }}</a></td>
+                            <td> {{files.description }} </td>
+                            <td> {{files.orginal_headers}} </td>
+                            <td> {{files.selected_headers}} </td>
+                            <td> <a href="/modify_my_file/modified-file-{{ files.id }}">{{files.modified_file}}</a></td>
+                        </tr>
+                    {% endfor %}
+                </div>
+                <div >
+                    
+                    <p><input type="submit" style="width:180px;" class="btn btn-lg btn-default" value="Delet" /></p>
+                </div>
             </form>      
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    
+    </div>
+   
 {% endblock %}

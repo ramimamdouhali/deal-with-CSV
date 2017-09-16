@@ -4,17 +4,21 @@
     Upload File
 {% endblock %}
 
-{% block h1 %}
-    Upload Your New File
+{% block h1 %}  
+    <a href="{%  url "Upload_New_File" %}"> Upload Your New File</a>
+    <h4><small> You have {{my_uploaded_files|length}} File.</small></h4>
 {% endblock %}
 
 {% block article_content %}
-    <form method="post" enctype="multipart/form-data" >
+    <form  method="post" enctype="multipart/form-data" >
         {% csrf_token %}  <!-- This line inserts a CSRF token. -->
-        <table>
-            {{ form.as_table }}  <!-- This line displays lines of the form.-->
-        </table>
-
-        <p><input type="submit" value="Upload" /></p>
+        <div class="table-responsive" >
+            <table >
+                {{ form.as_table }}  <!-- This line displays lines of the form.-->
+            </table>
+        </div>
+       
+        <br>
+        <p><input style="width:150px;" class="btn btn-default btn-md btn-info" type="submit" value="Upload" /></p>
     </form>
 {% endblock %}

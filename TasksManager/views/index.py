@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
-from TasksManager.forms import Form_upload_file,Form_Developers
-from TasksManager.models import Project, Uploadedfiles, Developer, Task
+from TasksManager.forms import Form_upload_file,Form_Developers, Form_User,Form_Profile
+
+from TasksManager.models import Project, Uploadedfiles, Developer, Task,UserProfile
 from Work_manager import settings
 import csv
 from django import forms
@@ -11,23 +12,46 @@ import calendar
 import os
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+import json
 
 
-def page(request):    
-    action = 'Display all project'
-    all_projects = Project.objects.all()
-    projects_to_me = Project.objects.filter(client_name="me")
-    return render(request, 'TasksManager/index.html', {"action": action, "all_projects": all_projects, "projects_to_me": projects_to_me})
+        
+
+def Home_page(request):    
+    return render(request, 'TasksManager/home.html')
+
 
 @login_required
-def project_details(request,pk):
-    action = "display certain project"
-    project = Project.objects.get(id=pk)
-    return render(request, 'TasksManager/project_details.html', {"action": action, "project_details": project})
+def update_profile(request):
+    currentuser = request.user
+    currentdeveloper=Developer.objects.get(user_auth=currentuser)
+    my_uploaded_files=Uploadedfiles.objects.filter(app_user=currentdeveloper).order_by("id")
+
+    if request.method=='POST':
+        user_form=Form_User(request.POST,instance=request.user)
+        profile_form=Form_Profile(request.POST,instance=Developer.objects.get(user_auth=request.user))
+        
+        if profile_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            return HttpResponse('profile updated successfully')
+        else:
+            user_form=Form_User(instance=request.user)
+            profile_form=Form_Profile(instance=Developer.objects.get(user_auth=request.user))
+            return render(request,'TasksManager/my_profile.html',{"user_form":user_form,"profile_form":profile_form, "my_uploaded_files":my_uploaded_files})
+    else:
+        user_form=Form_User(instance=request.user)
+        profile_form=Form_Profile(instance=Developer.objects.get(user_auth=request.user))
+        return render(request,'TasksManager/my_profile.html',{"user_form":user_form,"profile_form":profile_form, "my_uploaded_files":my_uploaded_files})
+
+            
+
 @login_required
 def manage_my_files(request):
     error=False
-    all_uploaded_files=Uploadedfiles.objects.all()
+    currentuser = request.user
+    currentdeveloper=Developer.objects.get(user_auth=currentuser)
+    my_uploaded_files=Uploadedfiles.objects.filter(app_user=currentdeveloper).order_by("id")
     action = ""
     if request.method=='POST':
         if 'deletrow' in request.POST:
@@ -36,28 +60,43 @@ def manage_my_files(request):
             error = True
         if not error:
             for id in selected_rows:
-                row=Uploadedfiles.objects.get(id=id)
+                row=my_uploaded_files.get(id=id)
+                #row=Uploadedfiles.objects.get(id=id)
                 row.delete()
-            all_uploaded_files=Uploadedfiles.objects.all()
-            action='Files Deleted successfully'
-            return render(request,'TasksManager/manage_my_files.html',{"action":action,"all_uploaded_files":all_uploaded_files})
+            #all_uploaded_files=Uploadedfiles.objects.all()
+            action='Files Deleted successfully.'
+            return render(request,'TasksManager/manage_my_files.html',{"action":action,"my_uploaded_files":my_uploaded_files})
         else:
-            action='Please select one file atleast'
-            return render(request,'TasksManager/manage_my_files.html',{"action":action,"all_uploaded_files":all_uploaded_files})
+            action='You did not select any file'
+            return render(request,'TasksManager/manage_my_files.html',{"action":action,"my_uploaded_files":my_uploaded_files})
     else:
-        action='Select files to be deleted'
-        return render(request,'TasksManager/manage_my_files.html',{"action":action,"all_uploaded_files":all_uploaded_files})
+        action='Select files to be deleted:'
+        return render(request,'TasksManager/manage_my_files.html',{"action":action,"my_uploaded_files":my_uploaded_files})
 
 @login_required
 def modify_my_file(request):
-    all_uploaded_files = Uploadedfiles.objects.all()
-    action="Select your file and start modifing"
-    return render(request, 'TasksManager/modify_my_file.html', {"action": action, "all_uploaded_files": all_uploaded_files})
+    currentuser = request.user
+    currentdeveloper=Developer.objects.get(user_auth=currentuser)
+    my_uploaded_files = Uploadedfiles.objects.filter(app_user=currentdeveloper).order_by("id")
+
+    if len(my_uploaded_files) >0:
+        first_file=my_uploaded_files.first()
+        return HttpResponseRedirect('/modify_my_file/file-details-'+ str(first_file.id))
+    else:
+        action="Start uploading your files"
+        return render(request, 'TasksManager/modify_my_file.html', {"action": action, "my_uploaded_files": my_uploaded_files})
+        
 
 @login_required
 def file_details(request, pk):
-    all_uploaded_files = Uploadedfiles.objects.all()
-    instance_uploaded_file = Uploadedfiles.objects.get(id=pk)
+    currentuser = request.user
+    currentdeveloper=Developer.objects.get(user_auth=currentuser)
+    my_uploaded_files = Uploadedfiles.objects.filter(app_user=currentdeveloper)
+    #instance_uploaded_file = Uploadedfiles.objects.filter(app_user=currentdeveloper)
+    #if len(instance_uploaded_file)<1:
+        #return HttpResponseRedirect(reverse('modify_my_file'))
+
+    instance_uploaded_file=my_uploaded_files.get(id=pk)
     path = '{0}/{1}'.format(settings.MEDIA_URL, instance_uploaded_file.files.name)
 
     csv_file = csv.reader(open(path))
@@ -67,13 +106,14 @@ def file_details(request, pk):
     action = "File details: "
     header = next(csv_file)
     column_num = len(header)
-    original_headers = [(str(i), header[i])for i in range(0, column_num)]
-
-    instance_uploaded_file.orginal_headers = original_headers
+    
+    original_headers = [(str(i+1), header[i])for i in range(0, column_num)]
+    #return HttpResponse(original_headers)
+    instance_uploaded_file.orginal_headers = json.dumps(original_headers)
     instance_uploaded_file.save()
 
     error = False
-    selected_headers=[]
+    #selected_headers=[]
     if request.method == "POST":
         if 'col' in request.POST:
             selected_headers = request.POST.getlist('col')
@@ -82,7 +122,8 @@ def file_details(request, pk):
             error = True
 
         if not error:
-            instance_uploaded_file.selected_headers = selected_headers
+            
+            instance_uploaded_file.selected_headers =json.dumps(selected_headers)
             instance_uploaded_file.save()
 
             mylist = []
@@ -91,82 +132,77 @@ def file_details(request, pk):
                 os.makedirs(directory)
             path_modified = '{0}/{1}.{2}'.format(directory, instance_uploaded_file.title, 'csv')
             new_csv_file = open(path_modified, 'w')
-
+           
             for row in csv_file:
-                mylist.append([row[int(i)] for i in selected_headers])
-                line = ""
-                for j in selected_headers:
-                    line += row[int(j)] + ","
-                line += "\n"
+                mylist.append([row[int(i)-1] for i in selected_headers])
+                #line = ""
+                #for j in selected_headers:
+                    #line += row[int(j)] + ","
+                #line += "\n"
+                line=", ".join ([row[int(i)-1] for i in selected_headers])
+                line+="\n"
                 new_csv_file.write(line)
+                
+            
             instance_uploaded_file.modified_file = path_modified
             instance_uploaded_file.save()
-
-            return render(request, 'TasksManager/display_modified_file.html',
-                          {"selected_headers": selected_headers, "original_headers": original_headers,
-                           "file": instance_uploaded_file, "new_csv_file": mylist,"all_uploaded_files":all_uploaded_files})
+           
+            return HttpResponseRedirect('/modify_my_file/modified-file-'+ str(instance_uploaded_file.id))
+            #return render(request, 'TasksManager/display_modified_file.html',
+                          #{"selected_headers": selected_headers, "original_headers": original_headers,
+                           #"file": instance_uploaded_file, "new_csv_file": mylist,"my_uploaded_files":my_uploaded_files})
         else:
+            
             return render(request, 'TasksManager/files_details.html',
                           {"action": action, "file_details": instance_uploaded_file, "header": header,
-                           "original_headers": original_headers, "csv_file": csv_file,"all_uploaded_files":all_uploaded_files})
+                           "original_headers": original_headers, "csv_file": csv_file,"my_uploaded_files":my_uploaded_files})
 
     else:
         return render(request, 'TasksManager/files_details.html',
                       {"action": action, "file_details": instance_uploaded_file, "header": header,
-                      "original_headers": original_headers,"csv_file": csv_file,"all_uploaded_files":all_uploaded_files})
-
-@login_required
-def user_details(request,pk):
-    action = "display user details"
-    user = Developer.objects.get(id=pk)
-    return render(request, 'TasksManager/user_Details.html', {"action": action, "user_details": user})
+                      "original_headers": original_headers,"csv_file": csv_file,"my_uploaded_files":my_uploaded_files})
 
 
-def add_user(request):
-    action = "display user"
-    
-    if request.method=='POST':
-        form = Form_Developers(request.POST)
-        if form.is_valid():
-            form.save(commit=True)
-            return HttpResponseRedirect(reverse('modify_my_file'))
-        else:
-            return render(request, 'TasksManager/Upload_File.html', {'form': form})
-    else:
-        form=Form_Developers()
-        return render(request, 'TasksManager/Upload_File.html', {'form': form})
+
 
 @login_required
 def upload_file(request):
     currentuser = request.user
     currentdeveloper=Developer.objects.get(user_auth=currentuser)
+    my_uploaded_files=Uploadedfiles.objects.filter(app_user=currentdeveloper).order_by("id")
 
     if request.method == 'POST':
         new_file = Uploadedfiles(app_user = currentdeveloper)
         form = Form_upload_file(request.POST, request.FILES,instance=new_file)
         if form.is_valid():
             form.save(commit=True)
-            return HttpResponseRedirect(reverse('modify_my_file'))
+            return HttpResponseRedirect('/modify_my_file/file-details-'+ str(new_file.id))
+            #return HttpResponseRedirect('/modify_my_file/file-details-'+ str({{new_file.id}}))
         else:
-            return render(request, 'TasksManager/Upload_File.html', {'form': form})
+            return render(request, 'TasksManager/Upload_File.html', {'form': form,"my_uploaded_files":my_uploaded_files})
     else:
         form = Form_upload_file()
-        return render(request, 'TasksManager/Upload_File.html', {'form': form})
+        return render(request, 'TasksManager/Upload_File.html', {'form': form,"my_uploaded_files":my_uploaded_files})
 
 @login_required
 def display_modified_file(request,pk):
+    currentuser = request.user
+    currentdeveloper=Developer.objects.get(user_auth=currentuser)
 
     action = "display modified file"
-    all_uploaded_files = Uploadedfiles.objects.all()
-    instance_uploaded_file = Uploadedfiles.objects.get(id=pk)
+    my_uploaded_files = Uploadedfiles.objects.filter(app_user=currentdeveloper)
+    instance_uploaded_file = my_uploaded_files.get(id=pk)
+    #instance_uploaded_file = Uploadedfiles.objects.get(id=pk)
     path = '{0}'.format(instance_uploaded_file.modified_file.name)
     csv_file = csv.reader(open(path))
+    #jsonDec=json.decoder.JSONDecoder()
+    
+    original_headers = json.loads(instance_uploaded_file.orginal_headers)
+    selected_headers= json.loads(instance_uploaded_file.selected_headers)
 
-    original_headers = instance_uploaded_file.orginal_headers
-    selected_headers=instance_uploaded_file.selected_headers
 
     return render(request, 'TasksManager/display_modified_file.html',
                           {"original_headers": original_headers,"selected_headers":selected_headers,
-                           "file": instance_uploaded_file, "new_csv_file": csv_file,"all_uploaded_files":all_uploaded_files})
+                           "file": instance_uploaded_file, "new_csv_file": csv_file,"my_uploaded_files":my_uploaded_files})
 
 

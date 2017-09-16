@@ -1,0 +1,80 @@
+{% extends "TasksManager/header.html" %}
+
+{% block title_html %}
+    My profile
+{% endblock %}
+
+{% block h1 %}
+    <a href="{%  url "Upload_New_File" %}"> Upload Your New File</a>
+    <h4><small> You have {{my_uploaded_files|length}} File.</small></h4>
+    <h3>My profile</h3>
+{% endblock %}
+
+{% block article_content %}
+    <div class="container-fluid">
+
+    
+    <form class="form-horizontal col-sm-8" method="post" enctype="multipart/form-data" >
+        {% csrf_token %}  <!-- This line inserts a CSRF token. -->
+        
+        {#{{ user_form.as_p}}#}<!-- This line displays lines of the form.-->
+        {##}
+       
+        <div class="form-group">
+            <label  class="col-sm-3 ">{{ user_form.first_name.label_tag}}</label>
+            <div class="col-sm-9 input-group" >
+                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                <input type="field" class="form-control" {{user_form.first_name}}
+                
+            </div>
+            
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3">{{ user_form.last_name.label_tag}}</label>
+            <div class="input-group col-sm-9" >
+                <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                <input type="field"  class="form-control" {{user_form.last_name}}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3">{{ user_form.email.label_tag}}</label>
+            <div class="input-group col-sm-9" >
+                <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                <input type="email"  class="form-control" {{user_form.email}}
+            </div>
+        </div>
+       
+       
+
+        <div class="form-group">
+            <label class="col-sm-3">{{ profile_form.phone.label_tag}}</label>
+            <div class="input-group col-sm-9">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-phone"></i></span>
+                <input type="field"   class="form-control" {{profile_form.phone}}
+            </div>
+            
+        </div>
+
+        <div class="form-group">
+            <label class="col-sm-3">{{ profile_form.born_date.label_tag}}</label>
+            <div class="input-group col-sm-9">
+                <span class="input-group-addon"><i class="glyphicon glyphicon-calendar"></i></span>
+                <input type="field"  class="form-control" {{profile_form.born_date}}
+            </div>
+            
+        </div>
+        
+        <div class="form-group">
+            <label class="col-sm-3"></label>
+            <button type="submit"  class="col-sm-3 btn btn-default btn-info btn-md">Save changes</button>
+        </div>
+       
+       
+        
+       
+    </form>
+
+    </div>
+{% endblock %}

@@ -1,26 +1,92 @@
 {% extends "TasksManager/header.html" %}
 {% block title_html %}
-    Selected Columns
+    My modified file
 {% endblock %}
 
 {% block h1 %}
-     <a> Search</a>
-     <br>
-    
-    {% if all_uploaded_files|length > 0 %}
+     <style>
+      * {
+        box-sizing: border-box;
+      }
+      #myInput {
+        background-image:
+        url('/static/TasksManager/icon/searchicon11-1.png');
+        
+        background-position: 10px 10px;
+        background-repeat: no-repeat;
+        width: 100%;
+        
+        padding: 12px 20px 12px 50px;
+        border: 1px solid #ddd;
+        margin-bottom: 12px;
+      }
 
-        <table class="table table-striped">
+      #myTable {
+        border-collapse: collapse;
+        width: 100%;
+        border: 1px solid #ddd;
+       
+      }
+
+      #myTable th, #myTable td {
+        text-align: left;
+        padding: 12px;
+      }
+
+      #myTable tr {
+        border-bottom: 1px solid #ddd;
+      }
+
+      #myTable tr.header, #myTable tr:hover {
+        background-color: #f1f1f1;
+      }
+    
+    </style>
+    <a href="{%  url "Upload_New_File" %}"> Upload Your New File</a>
+    <h4><small> You have {{my_uploaded_files|length}} File.</small></h4>
+    <h3>My Files</h3>
+    <input type="text"
+    id="myInput"
+    onkeyup="myFunction()"
+    placeholder="Search Titles..."
+    title="Type in a name">
+
+      <script>
+            function myFunction() {
+                var input, filter, table, tr, td, i;
+                input = document.getElementById("myInput");
+                filter = input.value.toUpperCase();
+                table = document.getElementById("myTable");
+                tr = table.getElementsByTagName("tr");
+
+                for (i = 0; i < tr.length; i++) {
+                    td = tr[i].getElementsByTagName("td")[1];
+                    if (td) {
+                        if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                            tr[i].style.display = "";
+                        }
+                        else {
+                            tr[i].style.display = "none";
+                        }
+                    }
+                }
+            }
+        </script>  
+    
+    {% if my_uploaded_files|length > 0 %}
+
+        <table id="myTable" class="table table-hover">
             <thead>
-                <tr>
-                    <td>ID</td>
-                    <td>Title</td>
+                <tr class="active">
+                    <th class="text-center">ID</th>
+                    <th class="text-center">Title</th>
                 </tr>
             </thead>
             <tbody>
-                {% for files in all_uploaded_files %}
+                {% for files in my_uploaded_files %}
                     <tr>
-                        <td>{{ files.id }}</td>
-                        <td><a href="file-details-{{ files.id }}">{{ files.title }}</a></td>
+                        <td class="text-center">{{ files.id }}</td>
+                        <td class="text-center"><a href="file-details-{{ files.id }}">{{ files.title }}</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -31,34 +97,36 @@
 {% endblock %}
 
 {% block article_content %}
-    {{ file.id }}
-    {{ file.files }}
-    {{ file.title }}
-    {{ file.description }}
-    <br><br><br>
+    <h3> My modified file:</h3>           
+    <p> <strong>ID: </strong>{{ file.id }}, <strong> Name: </strong>{{ file.files }}, <strong>Tilte: </strong>{{ file.title }}, <strong>Description: </strong>{{ file.description }}</p>
 
-    <table class="table table-striped">
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered">
         <thead>
-            {% for cel in selected_headers %}
-
-                {% for org in original_headers %}
-
-                    {% if org.0 == cel %}
-                         <th> {{ org.1 }}</th>
-                    {% endif %}
+            <tr class="active">
+                {% for cel in selected_headers %}
+                    {% for org in original_headers %}
+                        {% if org.0 == cel %}
+                            <th class="text-center"> {{ org.1 }}</th>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
+            </tr>
+           
         </thead>
 
         <tbody>
             {% for row in new_csv_file %}
                 <tr>
                     {% for cell in row %}
-                        <td> {{cell}}</td>
+                        <td class="text-center"> {{cell}} </td>
                     {% endfor %}
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
+        </table>
+    
+    </div>
+   
 
 {% endblock %}

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 # Create your models here.
 error_name = {
 'required': 'You must type a name !',
@@ -13,6 +14,7 @@ class UserProfile(models.Model):
     born_date = models.DateField(verbose_name="Born date", null=True, default=None, blank=True)
     last_connection = models.DateTimeField(verbose_name="Date of last connection", null=True, default=None, blank=True)
     years_seniority = models.IntegerField(verbose_name="Seniority", default=0)
+    #user_image=models.ImageField(verbose_name="Image", null=True, default=None, blank=True)
     
     def __str__(self):
         return self.user_auth.username
@@ -33,7 +35,7 @@ class Supervisor(UserProfile):
 
 
 class Developer(UserProfile):
-    supervisor_name = models.ForeignKey(Supervisor, verbose_name="Supervisor")
+    supervisor_name = models.ForeignKey(Supervisor, verbose_name="Supervisor", null=True, default=None, blank=True)
 
 
 class Task(models.Model):
@@ -54,6 +56,8 @@ def user_directory_bathmodified(instance, modifiedfilename):
 
 # upload_to='uploadedfiles/%y-%m-%d'
 class Uploadedfiles(models.Model):
+    from .validators import validate_file_extension
+
     FRESHMAN = 'FR'
     SOPHOMORE = 'SO'
     JUNIOR = 'JR'
@@ -65,7 +69,7 @@ class Uploadedfiles(models.Model):
         (SENIOR, 'Senior'),
     )
 
-    files = models.FileField(verbose_name="Files", upload_to=user_directory_bath)
+    files = models.FileField(verbose_name="Files", upload_to=user_directory_bath, validators=[validate_file_extension])
     title = models.CharField(max_length=50, verbose_name="File Title")
     description = models.CharField(max_length=1000, verbose_name="Description")
     orginal_headers = models.CharField(max_length=3, choices=YEAR_IN_SCHOOL_CHOICES, default=FRESHMAN)

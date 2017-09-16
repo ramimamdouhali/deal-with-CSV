@@ -15,21 +15,20 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from TasksManager.views import index, connection, create_supervisor, create_developer,create_project
+from TasksManager.views import index, create_supervisor, create_developer
 
 
 admin.autodiscover()
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^home/$', index.page, name="public_index"),
-    url(r'^connection/$', connection.page, name="public_connection"),
-    url(r'^home/project-detail-(?P<pk>\d+)$', index.project_details, name="project_detail"),
-    
-    url(r'^uploaded_files/user-details-(?P<pk>\d+)$', index.user_details, name="user_details"),
+    url(r'^home/$', index.Home_page, name="Home_page"),
     url(r'^create-developer$', create_developer.page, name="create_developer"),
     url(r'^create-supervisor$', create_supervisor.page, name="create_supervisor"),
-    url(r'^create_project$', create_project.page, name='create_project'),
+   
+    
+    url(r'^home/my_profile$', index.update_profile, name="my_profile"),
+    
 
     url(r'^modify_my_file/$', index.modify_my_file, name="modify_my_file"),
     url(r'^modify_my_file/file-details-(?P<pk>\d+)$', index.file_details, name="file_details"),
@@ -37,8 +36,7 @@ urlpatterns = [
 
     url(r'^manage_my_files/$', index.manage_my_files, name="manage_my_files"),
     url(r'^manage_my_files/add_new/$', index.upload_file, name="Upload_New_File"),
-    #url(r'^manage_my_files/file-details-(?P<pk>\d+)$', index.file_details, name="file_details2"),
-    #url(r'^manage_my_files/modified-file-(?P<pk>\d+)$', index.display_modified_file, name="modified_file2"),
+    
 
     url(r'^accounts/',include('django.contrib.auth.urls')),
        
